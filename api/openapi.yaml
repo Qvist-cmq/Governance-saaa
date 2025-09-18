@@ -1,0 +1,665 @@
+openapi: 3.0.3
+info:
+  title: Governance SaaS API
+  version: 1.0.0
+  description: >-
+    API-first platform for IT governance and security management. All endpoints are tenant-scoped unless noted.
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://staging-api.example.com/v1
+    description: Staging
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TenantId:
+      name: X-Tenant-ID
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended]
+        primaryDomain:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [invited, active, suspended]
+    Document:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        title: { type: string }
+        type: { type: string, enum: [policy, standard, procedure, process, guideline, plan] }
+        status: { type: string, enum: [draft, in_review, approved, published, archived] }
+        ownerId: { type: string, format: uuid }
+        currentVersionId: { type: string, format: uuid }
+        effectiveDate: { type: string, format: date }
+        reviewDate: { type: string, format: date }
+        tags:
+          type: array
+          items: { type: string }
+    DocumentVersion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        versionNumber: { type: string }
+        status: { type: string, enum: [draft, in_review, approved, published, superseded] }
+        editorId: { type: string, format: uuid }
+        approverId: { type: string, format: uuid, nullable: true }
+        content: { type: string, description: "HTML/JSON payload" }
+        changeSummary: { type: string }
+        createdAt: { type: string, format: date-time }
+        publishedAt: { type: string, format: date-time, nullable: true }
+    Questionnaire:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [draft, active, closed] }
+        dueDate: { type: string, format: date, nullable: true }
+        assignedTo:
+          type: array
+          items: { type: string, format: uuid }
+    QuestionnaireResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        questionnaireId: { type: string, format: uuid }
+        responderId: { type: string, format: uuid }
+        status: { type: string, enum: [not_started, in_progress, submitted, approved] }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId: { type: string, format: uuid }
+              value: { type: string }
+              controlIds:
+                type: array
+                items: { type: string, format: uuid }
+    Control:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        title: { type: string }
+        frameworkRefs:
+          type: array
+          items: { type: string }
+        ownerId: { type: string, format: uuid }
+        status: { type: string, enum: [planned, in_progress, implemented, effective, needs_review] }
+        lastTestedAt: { type: string, format: date-time, nullable: true }
+        effectiveness: { type: string, enum: [unknown, ineffective, partially_effective, effective] }
+    Mapping:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        controlId: { type: string, format: uuid }
+        questionnaireItemId: { type: string, format: uuid, nullable: true }
+        documentSectionId: { type: string, format: uuid, nullable: true }
+        strength:
+          type: string
+          enum: [primary, supporting, related]
+    Report:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { type: string, enum: [dashboard_snapshot, coverage_gap, questionnaire_summary] }
+        generatedAt: { type: string, format: date-time }
+        status: { type: string, enum: [pending, completed, failed] }
+        downloadUrl: { type: string }
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate with email/password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Login success (MFA challenge or token).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requiresMfa: { type: boolean }
+                  token: { type: string }
+                  mfaToken: { type: string }
+  /auth/mfa/verify:
+    post:
+      summary: Verify MFA challenge.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mfaToken, code]
+              properties:
+                mfaToken: { type: string }
+                code: { type: string }
+      responses:
+        '200':
+          description: Authenticated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+  /tenants:
+    get:
+      summary: List tenants (Super Admin only).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Paginated tenants.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tenant'
+    post:
+      summary: Create tenant.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                primaryDomain: { type: string }
+      responses:
+        '201':
+          description: Tenant created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /tenants/{tenantId}:
+    parameters:
+      - name: tenantId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get tenant details.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tenant info.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+    patch:
+      summary: Update tenant settings.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                status: { type: string }
+                primaryDomain: { type: string }
+                locale: { type: string }
+      responses:
+        '200':
+          description: Tenant updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+
+  /users:
+    get:
+      summary: List users in tenant.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          description: Users list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+    post:
+      summary: Invite a user.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, roles]
+              properties:
+                email: { type: string }
+                fullName: { type: string }
+                roles:
+                  type: array
+                  items: { type: string }
+      responses:
+        '201':
+          description: User invited.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /documents:
+    get:
+      summary: List documents.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+    post:
+      summary: Create document.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, type]
+              properties:
+                title: { type: string }
+                type: { type: string }
+                ownerId: { type: string, format: uuid }
+                templateId: { type: string, format: uuid, nullable: true }
+      responses:
+        '201':
+          description: Document created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+
+  /documents/{documentId}:
+    parameters:
+      - $ref: '#/components/parameters/TenantId'
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get document with current version.
+      responses:
+        '200':
+          description: Document detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+    patch:
+      summary: Update metadata.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                ownerId: { type: string, format: uuid }
+                tags:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Updated document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+
+  /documents/{documentId}/versions:
+    post:
+      summary: Create new version.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, changeSummary]
+              properties:
+                content: { type: string }
+                changeSummary: { type: string }
+      responses:
+        '201':
+          description: Draft version created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentVersion'
+
+  /documents/{documentId}/versions/{versionId}/workflow/submit:
+    post:
+      summary: Submit draft for review.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '202':
+          description: Workflow advanced.
+  /documents/{documentId}/versions/{versionId}/workflow/approve:
+    post:
+      summary: Approve version.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment: { type: string }
+      responses:
+        '202':
+          description: Approved.
+
+  /questionnaires:
+    get:
+      summary: List questionnaires.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Questionnaire'
+    post:
+      summary: Create questionnaire.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, sections]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                dueDate: { type: string, format: date }
+                sections:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title: { type: string }
+                      questions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            prompt: { type: string }
+                            type: { type: string }
+                            controlIds:
+                              type: array
+                              items: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Created.
+
+  /questionnaires/{questionnaireId}/responses:
+    post:
+      summary: Start or update response.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responderId: { type: string, format: uuid }
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      questionId: { type: string, format: uuid }
+                      value: { type: string }
+                      controlIds:
+                        type: array
+                        items: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Response saved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireResponse'
+
+  /controls:
+    get:
+      summary: List controls.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Control'
+    post:
+      summary: Create or import control.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Control'
+      responses:
+        '201':
+          description: Control created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Control'
+
+  /mappings:
+    get:
+      summary: List mappings between controls and artifacts.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Mapping'
+    post:
+      summary: Create mapping.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [controlId]
+              properties:
+                controlId: { type: string, format: uuid }
+                questionnaireItemId: { type: string, format: uuid, nullable: true }
+                documentSectionId: { type: string, format: uuid, nullable: true }
+                strength: { type: string }
+      responses:
+        '201':
+          description: Mapping created.
+
+  /reports/coverage:
+    get:
+      summary: Generate coverage report (ISO 27001 / NIS2).
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - in: query
+          name: framework
+          schema:
+            type: string
+            enum: [iso27001, nis2]
+      responses:
+        '200':
+          description: Report summary.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  controlsCovered:
+                    type: integer
+                  controlsTotal:
+                    type: integer
+                  gaps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        controlId: { type: string, format: uuid }
+                        missingArtifacts:
+                          type: array
+                          items: { type: string }
+  /reports/schedule:
+    post:
+      summary: Schedule recurring report.
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, type, cron]
+              properties:
+                name: { type: string }
+                type: { type: string }
+                cron: { type: string }
+                recipients:
+                  type: array
+                  items: { type: string, format: email }
+      responses:
+        '201':
+          description: Report scheduled.
+```
