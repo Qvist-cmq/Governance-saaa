@@ -1,0 +1,129 @@
+# Starter Controls Library (ISO 27001 Annex A & NIS2 alignment)
+controls:
+  - code: A.5.1
+    title: Information Security Policies
+    description: Policies approved and communicated.
+    frameworkRefs: ["ISO27001:A.5.1", "NIS2:21.1"]
+    mappedDocuments: ["ISMS Policy"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Context & Leadership:ISMS scope"]
+  - code: A.5.24
+    title: Information Security Event Reporting
+    description: Procedures for reporting events and weaknesses.
+    frameworkRefs: ["ISO27001:A.5.24", "NIS2:23"]
+    mappedDocuments: ["Incident Response Plan"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Operational Controls:incident maturity", "nis2-self-assessment:Incident Reporting:procedure"]
+  - code: A.6.1
+    title: Statement of Applicability
+    frameworkRefs: ["ISO27001:A.6.1"]
+    mappedDocuments: ["ISMS Policy"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Risk Assessment & Treatment:soa upload"]
+  - code: A.6.3
+    title: Contact with Authorities
+    frameworkRefs: ["ISO27001:A.6.3", "NIS2:23"]
+    mappedDocuments: ["Incident Response Plan"]
+    mappedQuestionnaireItems: []
+  - code: A.7.1
+    title: Human Resource Security Prior to Employment
+    frameworkRefs: ["ISO27001:A.7.1"]
+    mappedDocuments: ["Acceptable Use Policy"]
+    mappedQuestionnaireItems: []
+  - code: A.7.2
+    title: During Employment Responsibilities
+    frameworkRefs: ["ISO27001:A.7.2"]
+    mappedDocuments: ["Acceptable Use Policy"]
+    mappedQuestionnaireItems: []
+  - code: A.8.1
+    title: Asset Inventory
+    frameworkRefs: ["ISO27001:A.8.1", "NIS2:21.2(a)"]
+    mappedDocuments: ["Change Management Procedure"]
+    mappedQuestionnaireItems: []
+  - code: A.8.2
+    title: Information Classification
+    frameworkRefs: ["ISO27001:A.8.2"]
+    mappedDocuments: ["ISMS Policy", "Access Control Standard"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Risk Assessment & Treatment:methodology"]
+  - code: A.8.12
+    title: Data Backup
+    frameworkRefs: ["ISO27001:A.8.12", "NIS2:21.2(d)"]
+    mappedDocuments: ["Backup and Recovery Procedure"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Operational Controls:backup testing"]
+  - code: A.8.13
+    title: Information Recovery Procedures
+    frameworkRefs: ["ISO27001:A.8.13", "NIS2:21.2(d)"]
+    mappedDocuments: ["IT Contingency & Disaster Recovery Plan"]
+    mappedQuestionnaireItems: ["iso27001-readiness:Operational Controls:backup testing"]
+  - code: A.8.16
+    title: Secure Disposal or Re-use of Equipment
+    frameworkRefs: ["ISO27001:A.8.16"]
+    mappedDocuments: ["Acceptable Use Policy"]
+    mappedQuestionnaireItems: []
+  - code: A.9.1
+    title: Access Control Policy
+    frameworkRefs: ["ISO27001:A.9.1"]
+    mappedDocuments: ["Access Control Standard"]
+    mappedQuestionnaireItems: []
+  - code: A.9.2
+    title: User Access Provisioning
+    frameworkRefs: ["ISO27001:A.9.2", "NIS2:21.2(b)"]
+    mappedDocuments: ["Access Control Standard"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Governance & Policies:management measures"]
+  - code: A.9.4
+    title: System and Application Access Control
+    frameworkRefs: ["ISO27001:A.9.4"]
+    mappedDocuments: ["Access Control Standard"]
+    mappedQuestionnaireItems: []
+  - code: A.12.1
+    title: Operational Procedures and Responsibilities
+    frameworkRefs: ["ISO27001:A.12.1"]
+    mappedDocuments: ["Change Management Procedure"]
+    mappedQuestionnaireItems: []
+  - code: A.12.6
+    title: Technical Vulnerability Management
+    frameworkRefs: ["ISO27001:A.12.6", "NIS2:21.2(c)"]
+    mappedDocuments: ["Change Management Procedure"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Governance & Policies:policy evidence"]
+  - code: A.13.1
+    title: Network Security Management
+    frameworkRefs: ["ISO27001:A.13.1", "NIS2:21.2(a)"]
+    mappedDocuments: ["Access Control Standard"]
+    mappedQuestionnaireItems: []
+  - code: A.14.2
+    title: Security in Development and Support Processes
+    frameworkRefs: ["ISO27001:A.14.2"]
+    mappedDocuments: ["Change Management Procedure"]
+    mappedQuestionnaireItems: []
+  - code: A.15.1
+    title: Supplier Security Requirements
+    frameworkRefs: ["ISO27001:A.15.1", "NIS2:21.2(e)"]
+    mappedDocuments: ["Supplier Management Guideline"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Supply Chain Security:supplier enforcement"]
+  - code: A.15.2
+    title: Supplier Service Delivery Management
+    frameworkRefs: ["ISO27001:A.15.2"]
+    mappedDocuments: ["Supplier Management Guideline"]
+    mappedQuestionnaireItems: []
+  - code: A.16.1
+    title: Management of Information Security Incidents
+    frameworkRefs: ["ISO27001:A.16.1", "NIS2:23"]
+    mappedDocuments: ["Incident Response Plan"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Incident Reporting:procedure"]
+  - code: A.17.1
+    title: Information Security Continuity
+    frameworkRefs: ["ISO27001:A.17.1", "NIS2:21.2(d)"]
+    mappedDocuments: ["IT Contingency & Disaster Recovery Plan"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Incident Reporting:exercise date"]
+  - code: A.17.2
+    title: Redundancies
+    frameworkRefs: ["ISO27001:A.17.2"]
+    mappedDocuments: ["IT Contingency & Disaster Recovery Plan"]
+    mappedQuestionnaireItems: []
+  - code: A.18.1
+    title: Compliance with Legal Requirements
+    frameworkRefs: ["ISO27001:A.18.1", "NIS2:21.2(g)"]
+    mappedDocuments: ["ISMS Policy"]
+    mappedQuestionnaireItems: []
+  - code: NIS2-Article21-Training
+    title: Cybersecurity Training and Awareness
+    frameworkRefs: ["NIS2:21.2(b)"]
+    mappedDocuments: ["Acceptable Use Policy"]
+    mappedQuestionnaireItems: ["nis2-self-assessment:Governance & Policies:management measures"]

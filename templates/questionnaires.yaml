@@ -1,0 +1,69 @@
+# Questionnaire Templates
+
+- id: iso27001-readiness
+  name: ISO 27001 Readiness Assessment
+  description: Evaluate alignment with ISO 27001 Annex A controls.
+  sections:
+    - title: Context & Leadership
+      questions:
+        - prompt: "Is the ISMS scope formally documented and approved?"
+          type: single_choice
+          options: ["Yes", "Partially", "No"]
+          guidance: "Reference ISMS Scope document."
+          controlRefs: ["A.4.3"]
+        - prompt: "Describe top-level management commitment to the ISMS."
+          type: long_text
+          guidance: "Attach meeting minutes or policy references."
+          controlRefs: ["A.5.1"]
+    - title: Risk Assessment & Treatment
+      questions:
+        - prompt: "Is there an approved risk assessment methodology?"
+          type: single_choice
+          options: ["Yes", "Partially", "No"]
+          controlRefs: ["A.8.2"]
+        - prompt: "Upload the current Statement of Applicability."
+          type: file_upload
+          controlRefs: ["A.6.1"]
+    - title: Operational Controls
+      questions:
+        - prompt: "How are backup restorations tested?"
+          type: long_text
+          controlRefs: ["A.8.12", "A.8.13"]
+        - prompt: "Rate the maturity of incident response process."
+          type: likert
+          scale: ["Initial", "Managed", "Defined", "Quantitatively Managed", "Optimizing"]
+          controlRefs: ["A.5.24"]
+
+- id: nis2-self-assessment
+  name: NIS2 Readiness Questionnaire
+  description: Assess adherence to EU NIS2 core requirements.
+  sections:
+    - title: Governance & Policies
+      questions:
+        - prompt: "Has management approved cybersecurity risk-management measures?"
+          type: single_choice
+          options: ["Yes", "In progress", "No"]
+          controlRefs: ["NIS2 Article 21.1"]
+        - prompt: "Provide evidence of policies covering incident handling, business continuity, and supply chain security."
+          type: file_upload
+          controlRefs: ["NIS2 Article 21.2"]
+    - title: Incident Reporting
+      questions:
+        - prompt: "Is there a documented procedure for 24-hour early warning to CSIRT/NCA?"
+          type: multi_choice
+          options:
+            - "Procedure documented"
+            - "Staff trained"
+            - "Communication channels tested"
+          controlRefs: ["NIS2 Article 23"]
+        - prompt: "Date of last incident simulation exercise"
+          type: date
+          controlRefs: ["NIS2 Article 21.2(d)"]
+    - title: Supply Chain Security
+      questions:
+        - prompt: "How are supplier cybersecurity requirements enforced?"
+          type: long_text
+          controlRefs: ["NIS2 Article 21.2(e)"]
+        - prompt: "Attach latest supplier risk assessment summary."
+          type: file_upload
+          controlRefs: ["NIS2 Article 21.2(e)"]
